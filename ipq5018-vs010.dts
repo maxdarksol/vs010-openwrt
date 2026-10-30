@@ -39,8 +39,14 @@
 
 		reset-button {
 			label = "reset";
-			gpios = <&tlmm 33 GPIO_ACTIVE_LOW>;
+			gpios = <&tlmm 32 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_RESTART>;
+		};
+
+		mesh-button {
+			label = "mesh";
+			gpios = <&tlmm 34 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_WPS>;
 		};
 	};
 
@@ -49,8 +55,15 @@
 		pinctrl-0 = <&led_pins>;
 		pinctrl-names = "default";
 
-		led_status: led-0 {
-			gpios = <&tlmm 35 GPIO_ACTIVE_LOW>;
+		led_status_red: led-red {
+			gpios = <&tlmm 31 GPIO_ACTIVE_LOW>;
+			color = <LED_COLOR_ID_RED>;
+			function = LED_FUNCTION_STATUS;
+			default-state = "off";
+		};
+
+		led_status: led-green {
+			gpios = <&tlmm 33 GPIO_ACTIVE_LOW>;
 			color = <LED_COLOR_ID_GREEN>;
 			function = LED_FUNCTION_STATUS;
 			default-state = "off";
@@ -193,12 +206,12 @@
 	pinctrl-names = "default";
 	reset-gpios = <&tlmm 26 GPIO_ACTIVE_LOW>;
 
-	// QCA8337 Phy0 -> LAN3
+	// QCA8337 Phy0 -> unused
 	qca8337_0: ethernet-phy@0 {
 		reg = <0>;
 	};
 
-	// QCA8337 Phy1 -> LAN2
+	// QCA8337 Phy1 -> WAN
 	qca8337_1: ethernet-phy@1 {
 		reg = <1>;
 	};
@@ -208,12 +221,12 @@
 		reg = <2>;
 	};
 
-	// QCA8337 Phy3 -> WAN
+	// QCA8337 Phy3 -> LAN2
 	qca8337_3: ethernet-phy@3 {
 		reg = <3>;
 	};
 
-	// QCA8337 Phy4 -> IPQ5018 GE Phy
+	// QCA8337 Phy4 -> unused
 	qca8337_4: ethernet-phy@4 {
 		reg = <4>;
 	};
@@ -243,31 +256,31 @@
 
 			port@1 {
 				reg = <1>;
-				label = "lan3";
-				phy-handle = <&qca8337_0>;
+				label = "wan";
+				phy-handle = <&qca8337_1>;
 			};
 
 			port@2 {
 				reg = <2>;
-				label = "lan2";
-				phy-handle = <&qca8337_1>;
-			};
-
-			port@3 {
-				reg = <3>;
 				label = "lan1";
 				phy-handle = <&qca8337_2>;
 			};
 
-			port@4 {
-				reg = <4>;
-				label = "wan";
+			port@3 {
+				reg = <3>;
+				label = "lan2";
 				phy-handle = <&qca8337_3>;
 			};
 
+			port@4 {
+				reg = <4>;
+				/* unused */
+			};
+
+			// CPU MAC0 -> LAN3
 			port@5 {
 				reg = <5>;
-				phy-handle = <&qca8337_4>;
+				label = "lan3";
 				phy-mode = "gmii";
 				ethernet = <&dp1>;
 			};
@@ -277,8 +290,15 @@
 
 &tlmm {
 	button_pins: button-state {
-		button-pins {
-			pins = "gpio33";
+		reset-pins {
+			pins = "gpio32";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+
+		mesh-pins {
+			pins = "gpio34";
 			function = "gpio";
 			drive-strength = <8>;
 			bias-pull-up;
@@ -286,10 +306,19 @@
 	};
 
 	led_pins: led-state {
-		pins = "gpio35";
-		function = "gpio";
-		drive-strength = <8>;
-		bias-pull-down;
+		red-led-pins {
+			pins = "gpio31";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
+
+		green-led-pins {
+			pins = "gpio33";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
 	};
 
 	mdio1_pins: mdio-state {
